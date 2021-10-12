@@ -1,16 +1,18 @@
+from typing import Callable
 import numpy as np
 import cv2
 import sys
 
 
 COLOR_BOUNDARIES = {
-    'LOWER_GREEN': [36, 0, 0],
-    'UPPER_GREEN': [86, 255, 255]
+    'LOWER_GREEN_HSV': np.array([36, 0, 0]),
+    'UPPER_GREEN_HSV': np.array([86, 255, 255]),
+    'LOWER_GREEN_BGR': np.array([0, 135, 0]),
+    'UPPER_GREEN_BGR': np.array([110, 255, 110])
 }
 
 
-def check_dimensions_compability(video_object: cv2.VideoCapture,
-                                 image_array: np.ndarray) -> None:
+def check_dimensions_compability(video_object: cv2.VideoCapture, image_array: np.ndarray) -> None:
     '''Function to check if sizes of both inputs match'''
     video_width = video_object.get(cv2.CAP_PROP_FRAME_WIDTH)
     video_height = video_object.get(cv2.CAP_PROP_FRAME_HEIGHT)
@@ -21,9 +23,8 @@ def check_dimensions_compability(video_object: cv2.VideoCapture,
         raise Exception("File dimensions mismatch")
 
 
-def replace_background_cv2(frame: np.ndarray, image: np.ndarray,
-                           lower_boundary: np.ndarray,
-                           upper_boundary: np.ndarray) -> np.ndarray:
+def replace_background_cv2(
+        frame: np.ndarray, image: np.ndarray, lower_boundary: np.ndarray, upper_boundary: np.ndarray) -> np.ndarray:
     '''Cv2-based implementation of background replacement'''
     # Represent frame as hsv array
     hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -44,38 +45,53 @@ def replace_background_cv2(frame: np.ndarray, image: np.ndarray,
     return result
 
 
-def replace_background_with_image(video: str, image: str) -> None:
+def replace_background_self(
+        frame: np.ndarray, image: np.ndarray, lower_boundary: np.ndarray, upper_boundary: np.ndarray) -> np.ndarray:
+    '''Self-implemented background replacement'''
+    # Vectorization > iteration
+    mask = (frame[:, :, 0] <= upper_boundary[0]) & (
+        frame[:, :, 1] >= lower_boundary[1]) & (
+            frame[:, :, 2] <= upper_boundary[2])
+
+    # Replace only masked pixels
+    frame[mask] = image[mask]
+
+    return frame
+
+
+def replace_background_with_image(video: str, image: str, removal_function: Callable,
+                                  lower_boundary: np.ndarray = COLOR_BOUNDARIES['LOWER_GREEN_HSV'],
+                                  upper_boundary: np.ndarray = COLOR_BOUNDARIES['UPPER_GREEN_HSV']) -> None:
     '''Function which replaces green background with given image_stream'''
     video_stream = cv2.VideoCapture(video)
     image_stream = cv2.imread(image)  # numpy array
 
     check_dimensions_compability(video_stream, image_stream)
-
-    # Define boundaries for colour
-    lower_boundary = np.array(COLOR_BOUNDARIES['LOWER_GREEN'])
-    upper_boundary = np.array(COLOR_BOUNDARIES['UPPER_GREEN'])
+    fourcc = cv2.VideoWriter_fourcc(*'MP4V')
+    output = cv2.VideoWriter('output.mp4', fourcc, 30.0, (image_stream.shape[1], image_stream.shape[0]))
 
     while(video_stream.isOpened()):
         stream_read, frame = video_stream.read()
         if stream_read is True:
-            adjusted_frame = replace_background_cv2(
-                frame, image_stream, lower_boundary, upper_boundary)
-            cv2.imshow('frame', adjusted_frame)
-
-            # Press q to exit
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
+            adjusted_frame = removal_function(frame, image_stream, lower_boundary, upper_boundary)
+            output.write(adjusted_frame)
+            # Uncomment for visible output (press q to quit)
+            # cv2.imshow('frame', adjusted_frame)
+            # if cv2.waitKey(1) & 0xFF == ord('q'):
+            #     break
         else:
             break
     video_stream.release()
+    output.release()
     cv2.destroyAllWindows()
+    return True
 
 
 def main():
     video_name = sys.argv[1]
     image_name = sys.argv[2]
 
-    replace_background_with_image(video_name, image_name)
+    replace_background_with_image(video_name, image_name, replace_background_cv2)
 
 
 if __name__ == "__main__":

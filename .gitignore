@@ -64,6 +64,7 @@ db.sqlite3-journal
 # Flask stuff:
 instance/
 .webassets-cache
+*.cfg
 
 # Scrapy stuff:
 .scrapy
@@ -128,10 +129,10 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Videos an images
-*.mp4
-*.jpg
-*.png
+# Videos and images for testing
+/*.mp4
+/*.jpg
+/*.png
 
 # VS Code settings
 .vscode
