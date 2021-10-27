@@ -39,7 +39,7 @@ templates_path = ['_templates']
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'docs/source/conf.rst',
-                    'docs/source/test_green_screen.rst', 'docs/source/video_call_background.rst']
+                    'docs/source/test_green_screen.rst']
 
 
 # -- Options for HTML output -------------------------------------------------

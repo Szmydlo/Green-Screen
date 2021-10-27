@@ -134,5 +134,5 @@ def main():
     replace_background_with_image(video_name, image_name, replace_background_cv2)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

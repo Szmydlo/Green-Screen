@@ -8,8 +8,8 @@ TODO:
   - &check; Find the pixels that are approximately green/blue  
   - &check; Set the opacity of those pixel to zero  
   - &check; Add a different background  
-- &cross; Blur constant-over-time background (like video calls)
-  - &cross; Real time computation
+- &check; Blur constant-over-time background (like video calls)
+  - &check; Real time computation
 
 <br />
 <br />
@@ -40,3 +40,29 @@ Even with optimized, vectorized code (iterated approach is around 100 times slow
 Quality-wise it is also harder to define "green" in BGR colour model. Therefore self-implemented method performs slightly worse in terms of quality too:
 
 ![Quality comparison of green screen removal](/Screenshots/Squirrels.png "Quality comparison of green screen removal")  
+
+<br />
+<br />
+
+## Background Blur
+Located in [video_call_background.py](https://github.com/Szmydlo/Green-Screen/blob/main/video_call_background.py). There are no parameters required. It shows real-time blurring of webcam video with chosen approach.
+<br />
+<br />
+### Testing
+Writing tests for this problem does not make sense as the most important part is the quality of produced output. That is why the results will be compared visually.  
+CV2-based approach focuses on chosing colours in HSV color model, as there is no way to track constant-voer-time pixels in CV2 library:
+
+![CV2-based blur](/Screenshots/BlurCV2.png "CV2-based blur")
+<br />
+As it uses colour values to mask out and blur some pixels, there always be some imperfections. Therefore my face is a little blurred too. But especially in the left picture leaflet is much more blurred than the face.
+
+<br />
+<br />
+Self-implemented approach saves a frame and compares it with the new one at chosen frequency. At all the pixels, where the value stayed the same the blurring will be applied. This results in blurring constant-over-time pixels. The mask is adjusted to possibly best cover "constant" pixels:  
+
+PICTURE WILL BE ADDED IN THE MORNING WHEN LIGHT IS BETTER  
+
+Movement is here required to keep "face pixels" unblurred, but the quality of the blur is much better as there are some pixels where there is no movement at all and they stay properly blurred thoughout the usage.
+
+
+Both approaches produce output with around 30 FPS. For comparability reasons self-implemented function also uses Gaussian blurring provided by CV2.
