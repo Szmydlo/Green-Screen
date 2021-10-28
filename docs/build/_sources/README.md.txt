@@ -19,7 +19,7 @@ Located in [green_screen.py](https://github.com/Szmydlo/Green-Screen/blob/main/g
 - Video with green background
 - Image to replace green pixels
 
-They both should have the same dimensions, otherwise error will be thrown. Edited video is stored in  `output.mp4` file. To see how algorithm performs frame by frame uncomment block in `replace_background_with_image` function.
+and uncomment chosen function in main. Parameters should have the same dimensions, otherwise error will be thrown. Edited video is stored in  `output.mp4` file. To see how algorithm performs frame by frame uncomment block in `replace_background_with_image` function.
 <br />
 <br />
 ### Testing
@@ -35,7 +35,7 @@ Self implementation tries to compete with predefined functions. It makes cuts us
 <br />
 For a 30 fps video it takes around the length of video to replace background with self-implemented method. On the other hand CV2 method needs 1/3 of duration of the video to replace green pixels.
 
-Even with optimized, vectorized code (iterated approach is around 100 times slower) CV2 predefined methods are much faster in replacing green screen.
+Even with optimized, vectorized code (iterated approach is around 100 times slower) CV2 predefined methods are much faster in replacing green screen. This is because CV2 uses Intel Integrated Performance Primitives, which is an aggresive optimization combined with exploitation of CPU algorithms like SSE - Streaming (Single Instruction Multiple Data) Extensions. SSE can i.e. assign multiple values parallelly.
 
 Quality-wise it is also harder to define "green" in BGR colour model. Therefore self-implemented method performs slightly worse in terms of quality too:
 
@@ -60,9 +60,14 @@ As it uses colour values to mask out and blur some pixels, there always be some 
 <br />
 Self-implemented approach saves a frame and compares it with the new one at chosen frequency. At all the pixels, where the value stayed the same the blurring will be applied. This results in blurring constant-over-time pixels. The mask is adjusted to possibly best cover "constant" pixels:  
 
-PICTURE WILL BE ADDED IN THE MORNING WHEN LIGHT IS BETTER  
+![Self-implemented blur](/Screenshots/VideoCallSelf.png "Self-implemented blur") 
 
 Movement is here required to keep "face pixels" unblurred, but the quality of the blur is much better as there are some pixels where there is no movement at all and they stay properly blurred thoughout the usage.
 
 
-Both approaches produce output with around 30 FPS. For comparability reasons self-implemented function uses Gaussain blurring provided by CV2.
+Both approaches produce output with around 30 FPS. For comparability reasons self-implemented function also uses Gaussian blurring provided by CV2.
+
+## Unit Tests and Coverage
+Both scripts are tested using ```unittest``` library. Coverage (without main functions): 
+
+![Coverage](/Screenshots/Coverage.png "Coverage") 
