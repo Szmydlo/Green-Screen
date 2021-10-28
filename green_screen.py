@@ -125,14 +125,19 @@ def replace_background_with_image(video: str, image: str, removal_function: Call
     return True
 
 
-def main():
+def main():  # pragma: no cover
     '''Main function to run the script
     '''
     video_name = sys.argv[1]
     image_name = sys.argv[2]
 
+    # CV2
     replace_background_with_image(video_name, image_name, replace_background_cv2)
 
+    # Self
+    # replace_background_with_image(video_name, image_name, replace_background_self,
+    #                               COLOR_BOUNDARIES['LOWER_GREEN_BGR'], COLOR_BOUNDARIES['UPPER_GREEN_BGR'])
 
-if __name__ == '__main__':
+
+if __name__ == '__main__':  # pragma: no cover
     main()

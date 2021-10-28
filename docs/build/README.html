@@ -1,0 +1,181 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Green Screen Replacement Script &#8212; Green-Screen 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="&lt;no title&gt;" href="docs/source/modules.html" />
+    <link rel="prev" title="Green-Screen Documentation" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section class="tex2jax_ignore mathjax_ignore" id="green-screen-replacement-script">
+<h1>Green Screen Replacement Script<a class="headerlink" href="#green-screen-replacement-script" title="Permalink to this headline">¶</a></h1>
+<p>The idea behind this project is to develop a script, which will replace uniform green background of a video with an image and blur background as in video calls and compare it to predefined functions of <a class="reference external" href="https://opencv.org/">OpenCV</a> package</p>
+<p>TODO:</p>
+<ul class="simple">
+<li><p>✓ Replace green background with image</p>
+<ul>
+<li><p>✓ Find a film sample of a green/blue screen video</p></li>
+<li><p>✓ Import the frames of the video</p></li>
+<li><p>✓ Find the pixels that are approximately green/blue</p></li>
+<li><p>✓ Set the opacity of those pixel to zero</p></li>
+<li><p>✓ Add a different background</p></li>
+</ul>
+</li>
+<li><p>✓ Blur constant-over-time background (like video calls)</p>
+<ul>
+<li><p>✓ Real time computation</p></li>
+</ul>
+</li>
+</ul>
+<br />
+<br />
+<section id="green-background">
+<h2>Green Background<a class="headerlink" href="#green-background" title="Permalink to this headline">¶</a></h2>
+<p>Located in <a class="reference external" href="https://github.com/Szmydlo/Green-Screen/blob/main/green_screen.py">green_screen.py</a>. To run pass two parameters:</p>
+<ul class="simple">
+<li><p>Video with green background</p></li>
+<li><p>Image to replace green pixels</p></li>
+</ul>
+<p>They both should have the same dimensions, otherwise error will be thrown. Edited video is stored in  <code class="docutils literal notranslate"><span class="pre">output.mp4</span></code> file. To see how algorithm performs frame by frame uncomment block in <code class="docutils literal notranslate"><span class="pre">replace_background_with_image</span></code> function.
+<br />
+<br /></p>
+<section id="testing">
+<h3>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h3>
+<p>CV2-based function first represents colours in HSV model. Then it computes mask for both video frame and image. Unwanted green background is substracted and replaced with masked image. For 5 runs it takes:</p>
+<p><img alt="Timings of CV2 method" src="_images/GreenScreenReplacementCV2.png" />
+<br />
+<br />
+Self implementation tries to compete with predefined functions. It makes cuts using numpy advanced indexing: green pixels are replaced right away with image pixels. Also colour model is not changed (BGR - Blue, Green, Red). For 5 runs it takes:</p>
+<p><img alt="Timings of self-implemented method" src="_images/GreenScreenReplacementSelf.png" /></p>
+<br />
+For a 30 fps video it takes around the length of video to replace background with self-implemented method. On the other hand CV2 method needs 1/3 of duration of the video to replace green pixels.
+<p>Even with optimized, vectorized code (iterated approach is around 100 times slower) CV2 predefined methods are much faster in replacing green screen.</p>
+<p>Quality-wise it is also harder to define “green” in BGR colour model. Therefore self-implemented method performs slightly worse in terms of quality too:</p>
+<p><img alt="Quality comparison of green screen removal" src="_images/Squirrels.png" /></p>
+<br />
+<br />
+</section>
+</section>
+<section id="background-blur">
+<h2>Background Blur<a class="headerlink" href="#background-blur" title="Permalink to this headline">¶</a></h2>
+<p>Located in <a class="reference external" href="https://github.com/Szmydlo/Green-Screen/blob/main/video_call_background.py">video_call_background.py</a>. There are no parameters required. It shows real-time blurring of webcam video with chosen approach.
+<br />
+<br /></p>
+<section id="id1">
+<h3>Testing<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>Writing tests for this problem does not make sense as the most important part is the quality of produced output. That is why the results will be compared visually.<br />
+CV2-based approach focuses on chosing colours in HSV color model, as there is no way to track constant-voer-time pixels in CV2 library:</p>
+<p><img alt="CV2-based blur" src="_images/BlurCV2.png" />
+<br />
+As it uses colour values to mask out and blur some pixels, there always be some imperfections. Therefore my face is a little blurred too. But especially in the left picture leaflet is much more blurred than the face.</p>
+<br />
+<br />
+Self-implemented approach saves a frame and compares it with the new one at chosen frequency. At all the pixels, where the value stayed the same the blurring will be applied. This results in blurring constant-over-time pixels. The mask is adjusted to possibly best cover "constant" pixels:  
+<p>PICTURE WILL BE ADDED IN THE MORNING WHEN LIGHT IS BETTER</p>
+<p>Movement is here required to keep “face pixels” unblurred, but the quality of the blur is much better as there are some pixels where there is no movement at all and they stay properly blurred thoughout the usage.</p>
+<p>Both approaches produce output with around 30 FPS. For comparability reasons self-implemented function uses Gaussain blurring provided by CV2.</p>
+</section>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Green-Screen</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Software Description:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Green Screen Replacement Script</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Code API:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="docs/source/green_screen.html">green_screen module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/source/video_call_background.html">video_call_background module</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Green-Screen Documentation</a></li>
+      <li>Next: <a href="docs/source/modules.html" title="next chapter">&lt;no title&gt;</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Szydlik.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/README.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

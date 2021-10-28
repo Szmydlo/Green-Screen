@@ -10,9 +10,9 @@ COLOR_BOUNDARIES = {
     'UPPER_HSV': np.array([179, 150, 150])
 }
 
-ADJUSTMENT_FREQUENCY = 15
+ADJUSTMENT_FREQUENCY = 30
 BLUR_STRENGTH = 35
-DELTA = 7
+DELTA = 6
 
 
 def show_frame(frame: np.ndarray, last_time: float) -> None:
@@ -150,11 +150,11 @@ def replace_background_with_blur_cv2() -> None:
     cv2.destroyAllWindows()
 
 
-def main():
+def main():  # pragma: no cover
     '''Main function to run the script
     '''
     replace_background_with_blur_self()
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     main()
